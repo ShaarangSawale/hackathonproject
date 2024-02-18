@@ -4,9 +4,9 @@ from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 import random
 import os
-from training import PATH
+#from training import PATH
 
-
+PATH = "C:/Users/antho/hackathonproject/Face_Shape_Detection_Model.pt"
 import torch
 import torch.nn as nn
 from torch import optim
@@ -15,6 +15,7 @@ from torchvision import datasets, models, transforms
 from torchvision.models import vgg16, VGG16_Weights
 from torch.utils.data import DataLoader
 import torchvision.transforms as T
+import torchvision.transforms.functional as TF
 from torch.cuda.amp import GradScaler
 from sklearn.metrics import accuracy_score
 from collections import OrderedDict
@@ -28,6 +29,7 @@ if checkpoint['model'] == "vgg16":
 else: print("Model not found")
 
 model.class_to_idx = checkpoint['class_to_idx']
+#print(checkpoint['class_to_idx'])
 
 classifier = nn.Sequential(OrderedDict([('fc1', nn.Linear(25088, 5000)),
                                         ('relu', nn.ReLU()),
@@ -38,8 +40,8 @@ classifier = nn.Sequential(OrderedDict([('fc1', nn.Linear(25088, 5000)),
 model.classifier = classifier
 model.load_state_dict = checkpoint['model_state_dict']
 
-TOPK = 1;
-IMAGE_PATH = "/Users/shaarangsawale/hackathonproject/CapturedImage.jpg"
+TOPK = 1
+IMAGE_PATH = "C:/Users/antho/hackathonproject/CapturedImage.jpg"
 
 def process_image():
     image = Image.open(IMAGE_PATH)
@@ -49,28 +51,32 @@ def process_image():
     else: 
         image.thumbnail((256, 5000))
 
-    left_margin = (pil_image.width-224)/2
-    bottom_margin = (pil_image.height-224)/2
+    left_margin = (image.width-224)/2
+    bottom_margin = (image.height-224)/2
     right_margin = left_margin + 224
     top_margin = bottom_margin + 224
     
-    pil_image = pil_image.crop((left_margin, bottom_margin, right_margin, top_margin))
+    image = image.crop((left_margin, bottom_margin, right_margin, top_margin))
 
     np_image = np.array(image)/225
-    mean = np.array(mean=[0.485, 0.456, 0.406]) 
-    std = np.array([0.229, 0.224, 0.225])
+    mean = np.array([[0.485, 0.456, 0.406]]) 
+    std = np.array([[0.229, 0.224, 0.225]])
     np_image = (np_image - mean) / std
-    np_image = np.transpose((2, 0, 1))
+    #np_image = np.transpose((2, 0, 1))
     return np_image
 
 #determining a face-shape for the captured image
-image = process_image()
+image1 = process_image()
 
-image = torch.from_numpy(image).type(torch.cuda.FloatTensor)
+image1 = torch.from_numpy(image1).type(torch.FloatTensor)
+#print(image1)
+#image_transformation = T.ToTensor()
+#x = TF.to_tensor(image)
 
-image = image.unsqueeze(0)
+image1 = image1.unsqueeze_(0) # removing this changed error to complaining about size [3] instead of [1,3]
+image1 = np.transpose(image1, (0, 3, 1, 2))
 
-output = model.forward(image)
+output = model.forward(image1)
 probabilities = torch.exp(output)
 
 top_probabilities, top_indices = probabilities.topk(TOPK)
@@ -85,16 +91,3 @@ top_classes = [idx_to_class[index] for index in top_indices]
 result = top_classes[0]
 
 print(result)
-
-
-
-
-
-
-
-
-
-
-    
-       
-
