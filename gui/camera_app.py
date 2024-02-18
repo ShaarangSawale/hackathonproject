@@ -137,8 +137,16 @@ class CameraApp:
 
             # Hide the current window
             self.window.withdraw()
+            
+            file_path = "C:/Users/antho/hackathonproject/gui/predict.py"
+            try:
+                os.system(f'python {file_path}')
+            except FileNotFoundError:
+                print(f"Error: The file '{file_path}' does not exist.")
 
-            result = ""
+            f = open("result.txt", "r")
+            result = int(f.read())
+        
             # Open a new window with a heading and text
             self.show_result_window(result)
 
@@ -150,12 +158,27 @@ class CameraApp:
     def show_result_window(self, result):
         result_window = tk.Toplevel()
         result_window.title("Face Shape Measured")
+        print(result)
+        
+        if(result == 1):
+            guide = "heart_result.png"
+        elif(result == 2):
+            guide = "oblong_result.png"
+        elif(result == 3):
+            guide = "oval_result.png"
+        elif(result == 4):
+            guide = "round_result.png"
+        elif(result == 5):
+            guide = "square_result.png"
+            
 
-        self.logo_img_2 = ImageTk.PhotoImage(Image.open("square_result.png"))
+        self.logo_img_2 = ImageTk.PhotoImage(Image.open(guide))
 
         # Create a Label Widget to display the logo image
         self.logo_label_2 = ttk.Label(result_window, image=self.logo_img_2, style='Pink.TLabel')
         self.logo_label_2.grid(row=0, column=0, pady=5)
+        
+        self.result_window.protocol("WM_DELETE_WINDOW", self.close_result_window)
 
     def close_result_window(self):
         # Close the result window
