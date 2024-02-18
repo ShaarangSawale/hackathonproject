@@ -21,4 +21,5 @@ preprocess
 resnet = resnet101(weights=weights)
 resnet
 from PIL import Image
-image= Image.open('\face shape detector\diamond\download (1).jpg')
+image= Image.open('\face shape detector\diamond\download (1).jpg') 
+
